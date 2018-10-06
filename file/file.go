@@ -27,7 +27,7 @@ dep:
 			if r.Version == d.Version {
 
 				if r.Indirect {
-					fmt.Fprintf(stdout, "%s %s\n", color.CyanString("vend:"), r.String())
+					fmt.Fprintf(stdout, "%s %s\n", color.MagentaString("vend:"), r.String())
 				} else {
 					fmt.Fprintf(stdout, "%s %s\n", color.GreenString("vend:"), r.String())
 				}
