@@ -3,7 +3,6 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/fatih/color"
 )
@@ -27,15 +26,15 @@ func ParseOptions() Options {
 // PrintUsage prints the usage of this tool.
 func (opt *Options) PrintUsage() {
 	const banner string = `                     _
-__   _____ _ __   __| | __ _
-\ \ / / _ \ '_ \ / _' |/ _' |
- \ V /  __/ | | | (_| | (_| |
-  \_/ \___|_| |_|\__,_|\__,_|
+__   _____ _ __   __| |
+\ \ / / _ \ '_ \ / _' |
+ \ V /  __/ | | | (_| |
+  \_/ \___|_| |_|\__,_|
 
 `
 
 	color.Cyan(banner)
-	fmt.Fprintln(os.Stdout, color.GreenString("Because Google has no idea what vendoring means.\n"))
+	fmt.Printf("Properly vendor all dependencies.\n\n")
 
 	flag.Usage()
 }

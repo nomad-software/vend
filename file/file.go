@@ -9,14 +9,15 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/mattn/go-colorable"
 
 	"github.com/nomad-software/vend/output"
 )
 
-var (
-	stdout = colorable.NewColorableStdout()
-)
+// DeleteVendorDir deletes the vendor directory.
+func DeleteVendorDir() {
+	err := os.RemoveAll(vendorDir())
+	output.OnError(err, "Error removing vendor directory")
+}
 
 // CopyDependencies copies dependencies listed in the module file into your
 // vendor folder.
@@ -27,24 +28,26 @@ dep:
 			if r.Version == d.Version {
 
 				if r.Indirect {
-					fmt.Fprintf(stdout, "%s %s\n", color.MagentaString("vend:"), r.String())
+					fmt.Fprintf(output.Stdout, "%s %s\n", color.MagentaString("vend:"), r.String())
 				} else {
-					fmt.Fprintf(stdout, "%s %s\n", color.GreenString("vend:"), r.String())
+					fmt.Fprintf(output.Stdout, "%s %s\n", color.GreenString("vend:"), r.String())
 				}
 
-				pwd, err := os.Getwd()
-				output.OnError(err, "Error getting the current directory")
-
-				dest := path.Join(pwd, "vendor", d.Path)
-
+				dest := path.Join(vendorDir(), d.Path)
 				copy(d.Dir, dest)
-
 				continue dep
 			}
 		}
 
 		output.Error("No dependency available for %s %s", r.Path, r.Version)
 	}
+}
+
+// VendorDir returns the vendor directory in the current directory.
+func vendorDir() string {
+	pwd, err := os.Getwd()
+	output.OnError(err, "Error getting the current directory")
+	return path.Join(pwd, "vendor")
 }
 
 // Copy will copy files to the vendor directory.

@@ -21,6 +21,7 @@ func main() {
 		json = cli.ReadCacheDir()
 		deps := file.ParseDepFile(json)
 
+		file.DeleteVendorDir()
 		file.CopyDependencies(mod, deps)
 	}
 }
