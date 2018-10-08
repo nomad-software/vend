@@ -17,10 +17,13 @@ import (
 // vendor folder.
 func CopyDependencies(mod GoMod, deps []Dep) {
 	deleteVendorDir()
+	var report string
 dep:
 	for _, r := range mod.Require {
 		for _, d := range deps {
 			if r.Version == d.Version {
+				report += r.String() + "\n"
+
 				if r.Indirect {
 					fmt.Fprintf(output.Stdout, "%s %s\n", color.MagentaString("vend:"), r.String())
 				} else {
@@ -29,12 +32,22 @@ dep:
 
 				dest := path.Join(vendorDir(), d.Path)
 				copy(d.Dir, dest)
+
 				continue dep
 			}
 		}
 
 		output.Error("No dependency available for %s %s", r.Path, r.Version)
 	}
+
+	SaveReport(report)
+}
+
+// SaveReport saves the report into the vendor directory.
+func SaveReport(report string) {
+	file := path.Join(vendorDir(), "vend.info")
+	err := ioutil.WriteFile(file, []byte(report), 0644)
+	output.OnError(err, "Error saving report")
 }
 
 // VendorDir returns the vendor directory in the current directory.
