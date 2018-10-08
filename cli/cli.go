@@ -33,8 +33,8 @@ __   _____ _ __   __| |
 
 `
 
-	color.Cyan(banner)
-	fmt.Printf("Properly vendor all dependencies.\n\n")
+	color.Green(banner)
+	fmt.Printf("A small command line utility for fully vendoring module dependencies\n\n")
 
 	flag.Usage()
 }
