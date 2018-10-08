@@ -16,12 +16,11 @@ func main() {
 		cli.UpdateModule()
 
 		json := cli.ReadModFile()
-		mod := file.ParseModFile(json)
+		mod := file.ParseModJSON(json)
 
-		json = cli.ReadCacheDir()
-		deps := file.ParseDepFile(json)
+		json = cli.ReadDownloadCache()
+		deps := file.ParseDownloadJSON(json)
 
-		file.DeleteVendorDir()
 		file.CopyDependencies(mod, deps)
 	}
 }

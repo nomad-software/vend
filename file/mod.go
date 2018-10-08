@@ -7,8 +7,8 @@ import (
 	"github.com/nomad-software/vend/output"
 )
 
-// ParseModFile parses the mode file into a data structure.
-func ParseModFile(raw string) GoMod {
+// ParseModJSON parses the mode file into a data structure.
+func ParseModJSON(raw string) GoMod {
 	data := GoMod{
 		Module:  module{},
 		Require: make([]require, 10),
@@ -17,7 +17,7 @@ func ParseModFile(raw string) GoMod {
 	}
 
 	err := json.Unmarshal([]byte(raw), &data)
-	output.OnError(err, "Error parsing json")
+	output.OnError(err, "Error parsing module json")
 
 	return data
 }

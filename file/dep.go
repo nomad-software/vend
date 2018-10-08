@@ -2,20 +2,35 @@ package file
 
 import (
 	"encoding/json"
+	"io"
+	"strings"
 
 	"github.com/nomad-software/vend/output"
 )
 
-// ParseDepFile parses the dependency file into a data structure.
-func ParseDepFile(raw string) []Dep {
+// ParseDownloadJSON parses the dependency file into a data structure.
+func ParseDownloadJSON(raw string) []Dep {
+	decoder := json.NewDecoder(strings.NewReader(raw))
 	data := make([]Dep, 10)
-	err := json.Unmarshal([]byte(raw), &data)
-	output.OnError(err, "Error parsing json")
+
+	for {
+		var dep Dep
+		err := decoder.Decode(&dep)
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			output.OnError(err, "Error decoding dependency json")
+		}
+
+		data = append(data, dep)
+	}
 
 	return data
 }
 
-// Dep represents parsed module json data.
+// Dep represents parsed dependency json data.
 type Dep struct {
 	Path     string
 	Version  string

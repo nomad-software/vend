@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/nomad-software/vend/output"
 )
@@ -51,18 +50,18 @@ func ReadModFile() string {
 	return json
 }
 
-// ReadCacheDir reads the cache directory for dependency information.
-func ReadCacheDir() string {
+// ReadDownloadCache reads the cache directory for dependency information.
+func ReadDownloadCache() string {
 	cmd := exec.Command("go", "mod", "download", "-json")
 
 	cmd.Env = buildEnv()
 	cmd.Stderr = os.Stderr
 
 	stdout, err := cmd.StdoutPipe()
-	output.OnError(err, "Error connecting to 'go mod edit' stdout")
+	output.OnError(err, "Error connecting to 'go mod download' stdout")
 
 	err = cmd.Start()
-	output.OnError(err, "Error starting 'go mod edit'")
+	output.OnError(err, "Error starting 'go mod download'")
 
 	scanner := bufio.NewScanner(stdout)
 	json := ""
@@ -71,10 +70,7 @@ func ReadCacheDir() string {
 	}
 
 	err = cmd.Wait()
-	output.OnError(err, "Error while waiting for 'go mod edit'")
-
-	// Knarly workaround because the above command doesn't return valid Json ffs!
-	json = "[" + strings.Replace(json, "}{", "},{", -1) + "]"
+	output.OnError(err, "Error while waiting for 'go download edit'")
 
 	return json
 }

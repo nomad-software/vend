@@ -13,20 +13,14 @@ import (
 	"github.com/nomad-software/vend/output"
 )
 
-// DeleteVendorDir deletes the vendor directory.
-func DeleteVendorDir() {
-	err := os.RemoveAll(vendorDir())
-	output.OnError(err, "Error removing vendor directory")
-}
-
 // CopyDependencies copies dependencies listed in the module file into your
 // vendor folder.
 func CopyDependencies(mod GoMod, deps []Dep) {
+	deleteVendorDir()
 dep:
 	for _, r := range mod.Require {
 		for _, d := range deps {
 			if r.Version == d.Version {
-
 				if r.Indirect {
 					fmt.Fprintf(output.Stdout, "%s %s\n", color.MagentaString("vend:"), r.String())
 				} else {
@@ -45,9 +39,15 @@ dep:
 
 // VendorDir returns the vendor directory in the current directory.
 func vendorDir() string {
-	pwd, err := os.Getwd()
+	wd, err := os.Getwd()
 	output.OnError(err, "Error getting the current directory")
-	return path.Join(pwd, "vendor")
+	return path.Join(wd, "vendor")
+}
+
+// deleteVendorDir deletes the vendor directory.
+func deleteVendorDir() {
+	err := os.RemoveAll(vendorDir())
+	output.OnError(err, "Error removing vendor directory")
 }
 
 // Copy will copy files to the vendor directory.
@@ -56,7 +56,7 @@ func copy(src string, dest string) {
 	output.OnError(err, "Error getting information about source")
 
 	if info.Mode()&os.ModeSymlink != 0 {
-		return
+		return // Completely ignore symlinks.
 	}
 
 	if info.IsDir() {
