@@ -11,7 +11,7 @@ import (
 // ParseDownloadJSON parses the dependency file into a data structure.
 func ParseDownloadJSON(raw string) []Dep {
 	decoder := json.NewDecoder(strings.NewReader(raw))
-	data := make([]Dep, 10)
+	data := make([]Dep, 0, 10)
 
 	for {
 		var dep Dep

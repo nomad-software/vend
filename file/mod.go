@@ -11,9 +11,9 @@ import (
 func ParseModJSON(raw string) GoMod {
 	data := GoMod{
 		Module:  module{},
-		Require: make([]require, 10),
-		Exclude: make([]module, 10),
-		Replace: make([]replace, 10),
+		Require: make([]require, 0, 10),
+		Exclude: make([]module, 0, 10),
+		Replace: make([]replace, 0, 10),
 	}
 
 	err := json.Unmarshal([]byte(raw), &data)
