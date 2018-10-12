@@ -21,7 +21,7 @@ func CopyDependencies(mod GoMod, deps []Dep) {
 dep:
 	for _, r := range mod.Require {
 		for _, d := range deps {
-			if r.Version == d.Version {
+			if r.Path == d.Path && r.Version == d.Version {
 				report += r.String() + "\n"
 
 				if r.Indirect {
@@ -37,7 +37,7 @@ dep:
 			}
 		}
 
-		output.Error("No dependency available for %s %s", r.Path, r.Version)
+		output.Error("No dependency available for %s (%s)", r.Path, r.Version)
 	}
 
 	SaveReport(report)
