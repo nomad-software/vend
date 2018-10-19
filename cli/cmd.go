@@ -25,8 +25,8 @@ func UpdateModule() {
 	}
 }
 
-// ReadModFile reads the mod file and returns a Json string.
-func ReadModFile() string {
+// ReadModJSON reads the module file and returns a Json string.
+func ReadModJSON() string {
 	cmd := exec.Command("go", "mod", "edit", "-json")
 
 	cmd.Env = buildEnv()
@@ -50,8 +50,8 @@ func ReadModFile() string {
 	return json
 }
 
-// ReadDownloadCache reads the cache directory for dependency information.
-func ReadDownloadCache() string {
+// ReadDownloadJSON reads dependency information and returns a Json string.
+func ReadDownloadJSON() string {
 	cmd := exec.Command("go", "mod", "download", "-json")
 
 	cmd.Env = buildEnv()
