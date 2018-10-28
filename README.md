@@ -10,7 +10,11 @@
 
 This tool copies the entire dependency tree into the vendor folder like every other package manager does and how every sane developer would expect it to work. It can be used safely in the `$GOPATH` or elsewhere.
 
-This package expects that the new [module system](https://github.com/golang/go/wiki/Modules) is being used, if not it will attempt to create and update a module.
+This package expects that the new [module system](https://github.com/golang/go/wiki/Modules) [introduced in v1.11](https://golang.org/doc/go1.11) is being used.
+
+## Supported Go versions
+
+* v1.11+
 
 ## Install
 
