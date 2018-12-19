@@ -8,36 +8,20 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/fatih/color"
-
 	"github.com/nomad-software/vend/output"
 )
 
 // CopyDependencies copies dependencies listed in the module file into your
 // vendor folder.
-func CopyDependencies(mod GoMod, deps []Dep) {
+func CopyDependencies(deps []Dep) {
 	deleteVendorDir()
 	var report string
-dep:
-	for _, r := range mod.Require {
-		for _, d := range deps {
-			if r.Path == d.Path && r.Version == d.Version {
-				report += r.String() + "\n"
 
-				if r.Indirect {
-					fmt.Fprintf(output.Stdout, "%s %s\n", color.MagentaString("vend:"), r.String())
-				} else {
-					fmt.Fprintf(output.Stdout, "%s %s\n", color.GreenString("vend:"), r.String())
-				}
-
-				dest := path.Join(vendorDir(), d.Path)
-				copy(d.Dir, dest)
-
-				continue dep
-			}
-		}
-
-		output.Error("No dependency available for %s (%s)", r.Path, r.Version)
+	for _, d := range deps {
+		report += d.String() + "\n"
+		fmt.Fprintf(output.Stdout, "vend: copying %s\n", d.String())
+		dest := path.Join(vendorDir(), d.Path)
+		copy(d.Dir, dest)
 	}
 
 	SaveReport(report)

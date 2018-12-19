@@ -2,6 +2,7 @@ package file
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 
@@ -41,4 +42,9 @@ type Dep struct {
 	Dir      string
 	Sum      string
 	GoModSum string
+}
+
+// String returns a string representation.
+func (d *Dep) String() string {
+	return fmt.Sprintf("%s (%s)", d.Path, d.Version)
 }
