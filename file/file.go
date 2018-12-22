@@ -11,9 +11,32 @@ import (
 	"github.com/nomad-software/vend/output"
 )
 
-// CopyDependencies copies dependencies listed in the module file into your
-// vendor folder.
-func CopyDependencies(deps []Dep) {
+// CopyPkgDependencies copies package level dependencies.
+func CopyPkgDependencies(mod GoMod, deps []Dep) {
+	deleteVendorDir()
+	var report string
+
+dep:
+	for _, r := range mod.Require {
+		for _, d := range deps {
+			if r.Path == d.Path && r.Version == d.Version {
+				report += d.String() + "\n"
+				fmt.Fprintf(output.Stdout, "vend: copying %s\n", d.String())
+				dest := path.Join(vendorDir(), d.Path)
+				copy(d.Dir, dest)
+
+				continue dep
+			}
+		}
+
+		output.Error("No dependency available for %s (%s)", r.Path, r.Version)
+	}
+
+	SaveReport(report)
+}
+
+// CopyModuleDependencies copies module level dependencies transitively.
+func CopyModuleDependencies(deps []Dep) {
 	deleteVendorDir()
 	var report string
 

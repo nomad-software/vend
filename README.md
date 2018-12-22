@@ -30,7 +30,7 @@ into the `vendor` folder. This allows you to:
 
 1. Always have access to _all_ files in your dependencies, even if they go offline
 2. Always be able to build your project on a disconnected computer
-3. Always be able to run the tests or benchmarks of all your dependencies
+3. Always be able to run the tests or benchmarks for all your dependencies
 
 ## Supported Go versions
 

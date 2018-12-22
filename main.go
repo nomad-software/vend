@@ -14,10 +14,17 @@ func main() {
 
 	} else {
 		cli.UpdateModule()
-
 		json := cli.ReadDownloadJSON()
 		deps := file.ParseDownloadJSON(json)
 
-		file.CopyDependencies(deps)
+		if options.PkgOnly {
+			json = cli.ReadModJSON()
+			mod := file.ParseModJSON(json)
+
+			file.CopyPkgDependencies(mod, deps)
+		} else {
+
+			file.CopyModuleDependencies(deps)
+		}
 	}
 }

@@ -9,7 +9,8 @@ import (
 
 // Options contains CLI arguments passed to the program.
 type Options struct {
-	Help bool
+	Help    bool
+	PkgOnly bool
 }
 
 // ParseOptions parses the command line options and returns a struct filled with
@@ -18,6 +19,7 @@ func ParseOptions() Options {
 	var opt Options
 
 	flag.BoolVar(&opt.Help, "help", false, "Show help.")
+	flag.BoolVar(&opt.PkgOnly, "package", false, "Only vendor package level dependencies.")
 	flag.Parse()
 
 	return opt
