@@ -20,11 +20,12 @@ dep:
 	for _, r := range mod.Require {
 		for _, d := range deps {
 			if r.Path == d.Path && r.Version == d.Version {
-				report += d.String() + "\n"
-				fmt.Fprintf(output.Stdout, "vend: copying %s\n", d.String())
+				fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
 				dest := path.Join(vendorDir(), d.Path)
 				copy(d.Dir, dest)
 
+				report += fmt.Sprintf("# %s %s\n", d.Path, d.Version)
+				report += fmt.Sprintf("%s\n", d.Path)
 				continue dep
 			}
 		}
@@ -41,10 +42,12 @@ func CopyModuleDependencies(deps []Dep) {
 	var report string
 
 	for _, d := range deps {
-		report += d.String() + "\n"
-		fmt.Fprintf(output.Stdout, "vend: copying %s\n", d.String())
+		fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
 		dest := path.Join(vendorDir(), d.Path)
 		copy(d.Dir, dest)
+
+		report += fmt.Sprintf("# %s %s\n", d.Path, d.Version)
+		report += fmt.Sprintf("%s\n", d.Path)
 	}
 
 	SaveReport(report)
@@ -52,7 +55,7 @@ func CopyModuleDependencies(deps []Dep) {
 
 // SaveReport saves the report into the vendor directory.
 func SaveReport(report string) {
-	file := path.Join(vendorDir(), "vend.info")
+	file := path.Join(vendorDir(), "modules.txt")
 	err := ioutil.WriteFile(file, []byte(report), 0644)
 	output.OnError(err, "Error saving report")
 }

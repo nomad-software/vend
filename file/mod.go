@@ -2,7 +2,6 @@ package file
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/nomad-software/vend/output"
 )
@@ -41,11 +40,6 @@ type require struct {
 	Path     string
 	Version  string
 	Indirect bool
-}
-
-// String returns a string representation.
-func (r *require) String() string {
-	return fmt.Sprintf("%s (%s)", r.Path, r.Version)
 }
 
 // replace represents parsed module json data.
