@@ -55,9 +55,13 @@ func CopyModuleDependencies(deps []Dep) {
 
 // SaveReport saves the report into the vendor directory.
 func SaveReport(report string) {
-	file := path.Join(vendorDir(), "modules.txt")
-	err := ioutil.WriteFile(file, []byte(report), 0644)
-	output.OnError(err, "Error saving report")
+	if _, err := os.Stat(vendorDir()); os.IsNotExist(err) {
+		output.Info("No dependencies vended")
+	} else {
+		file := path.Join(vendorDir(), "modules.txt")
+		err := ioutil.WriteFile(file, []byte(report), 0644)
+		output.OnError(err, "Error saving report")
+	}
 }
 
 // VendorDir returns the vendor directory in the current directory.
