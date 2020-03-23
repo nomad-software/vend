@@ -5,20 +5,16 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 
+	"github.com/nomad-software/vend/cli"
 	"github.com/nomad-software/vend/output"
 )
 
 // CopyPkgDependencies copies package level dependencies.
 func CopyPkgDependencies(mod GoMod, deps []Dep) {
-	report, err := getReport()
-	if err != nil {
-		output.OnError(err, "Couldn't read modules.txt")
-	}
-
+	report := cli.GenerateReport(vendorDir())
 dep:
 	for _, r := range mod.Require {
 		for _, d := range deps {
@@ -37,25 +33,9 @@ dep:
 	SaveReport(report)
 }
 
-func getReport() (string, error) {
-	if err := exec.Command("go", "mod", "vendor").Run(); err != nil {
-		return "", err
-	}
-
-	if b, err := ioutil.ReadFile(filepath.Join(vendorDir(), "modules.txt")); err != nil {
-		return "", err
-	} else {
-		return string(b), nil
-	}
-}
-
 // CopyModuleDependencies copies module level dependencies transitively.
 func CopyModuleDependencies(deps []Dep) {
-	report, err := getReport()
-	if err != nil {
-		output.OnError(err, "Couldn't read modules.txt")
-	}
-
+	report := cli.GenerateReport(vendorDir())
 	deleteVendorDir()
 
 	for _, d := range deps {

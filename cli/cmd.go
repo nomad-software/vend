@@ -2,8 +2,10 @@ package cli
 
 import (
 	"bufio"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/nomad-software/vend/output"
 )
@@ -80,4 +82,15 @@ func buildEnv() []string {
 	env := os.Environ()
 	env = append(env, "GO111MODULE=on")
 	return env
+}
+
+// GenerateReport runs a builtin go command to generate an officially formatted report file.
+func GenerateReport(vendorDir string) string {
+	err := exec.Command("go", "mod", "vendor").Run()
+	output.OnError(err, "Error generating modules.txt")
+
+	bytes, err := ioutil.ReadFile(filepath.Join(vendorDir, "modules.txt"))
+	output.OnError(err, "Error reading modules.txt")
+
+	return string(bytes)
 }
