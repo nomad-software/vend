@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 
@@ -36,18 +37,31 @@ dep:
 	SaveReport(report)
 }
 
+func getReport() (string, error) {
+	if err := exec.Command("go", "mod", "vendor").Run(); err != nil {
+		return "", err
+	}
+
+	if b, err := ioutil.ReadFile(filepath.Join(vendorDir(), "modules.txt")); err != nil {
+		return "", err
+	} else {
+		return string(b), nil
+	}
+}
+
 // CopyModuleDependencies copies module level dependencies transitively.
 func CopyModuleDependencies(deps []Dep) {
+	report, err := getReport()
+	if err != nil {
+		output.OnError(err, "Couldn't read modules.txt")
+	}
+
 	deleteVendorDir()
-	var report string
 
 	for _, d := range deps {
 		fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
 		dest := path.Join(vendorDir(), d.Path)
 		copy(d.Dir, dest)
-
-		report += fmt.Sprintf("# %s %s\n", d.Path, d.Version)
-		report += fmt.Sprintf("%s\n", d.Path)
 	}
 
 	SaveReport(report)
