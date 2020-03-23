@@ -14,8 +14,10 @@ import (
 
 // CopyPkgDependencies copies package level dependencies.
 func CopyPkgDependencies(mod GoMod, deps []Dep) {
-	deleteVendorDir()
-	var report string
+	report, err := getReport()
+	if err != nil {
+		output.OnError(err, "Couldn't read modules.txt")
+	}
 
 dep:
 	for _, r := range mod.Require {
@@ -25,8 +27,6 @@ dep:
 				dest := path.Join(vendorDir(), d.Path)
 				copy(d.Dir, dest)
 
-				report += fmt.Sprintf("# %s %s\n", d.Path, d.Version)
-				report += fmt.Sprintf("%s\n", d.Path)
 				continue dep
 			}
 		}
