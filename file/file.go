@@ -14,7 +14,7 @@ import (
 
 // CopyPkgDependencies copies package level dependencies.
 func CopyPkgDependencies(mod GoMod, deps []Dep) {
-	report := cli.GenerateReport(vendorDir())
+	modFile := cli.ReadModFile(vendorDir())
 dep:
 	for _, r := range mod.Require {
 		for _, d := range deps {
@@ -30,12 +30,12 @@ dep:
 		output.Error("No dependency available for %s (%s)", r.Path, r.Version)
 	}
 
-	SaveReport(report)
+	SaveReport(modFile)
 }
 
 // CopyModuleDependencies copies module level dependencies transitively.
 func CopyModuleDependencies(deps []Dep) {
-	report := cli.GenerateReport(vendorDir())
+	modFile := cli.ReadModFile(vendorDir())
 	deleteVendorDir()
 
 	for _, d := range deps {
@@ -44,7 +44,7 @@ func CopyModuleDependencies(deps []Dep) {
 		copy(d.Dir, dest)
 	}
 
-	SaveReport(report)
+	SaveReport(modFile)
 }
 
 // SaveReport saves the report into the vendor directory.

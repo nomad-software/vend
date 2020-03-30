@@ -13,7 +13,7 @@ import (
 // UpdateModule makes sure the module is updated ready to vendor the
 // dependencies.
 func UpdateModule() {
-	var commands = []string{"tidy", "download"}
+	var commands = []string{"tidy", "download", "vendor"}
 
 	for _, command := range commands {
 		cmd := exec.Command("go", "mod", command)
@@ -84,11 +84,8 @@ func buildEnv() []string {
 	return env
 }
 
-// GenerateReport runs a builtin go command to generate an officially formatted report file.
-func GenerateReport(vendorDir string) string {
-	err := exec.Command("go", "mod", "vendor").Run()
-	output.OnError(err, "Error generating modules.txt")
-
+// ReadModFile runs a builtin go command to generate an officially formatted report file.
+func ReadModFile(vendorDir string) string {
 	bytes, err := ioutil.ReadFile(filepath.Join(vendorDir, "modules.txt"))
 	output.OnError(err, "Error reading modules.txt")
 
