@@ -13,7 +13,7 @@ func main() {
 		options.PrintUsage()
 
 	} else {
-		cli.UpdateModule()
+		cli.UpdateModule(options.Commands)
 		json := cli.ReadDownloadJSON()
 		deps := file.ParseDownloadJSON(json)
 
