@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bufio"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -34,22 +33,10 @@ func ReadModJSON() string {
 	cmd.Env = buildEnv()
 	cmd.Stderr = os.Stderr
 
-	stdout, err := cmd.StdoutPipe()
-	output.OnError(err, "Can't connect to 'go mod edit' stdout")
+	b, err := cmd.Output()
+	output.OnError(err, "Error running 'go mod edit'")
 
-	err = cmd.Start()
-	output.OnError(err, "Error starting 'go mod edit'")
-
-	scanner := bufio.NewScanner(stdout)
-	json := ""
-	for scanner.Scan() {
-		json += scanner.Text()
-	}
-
-	err = cmd.Wait()
-	output.OnError(err, "Error waiting for 'go mod edit'")
-
-	return json
+	return string(b)
 }
 
 // ReadDownloadJSON reads dependency information and returns a Json string.
@@ -59,22 +46,10 @@ func ReadDownloadJSON() string {
 	cmd.Env = buildEnv()
 	cmd.Stderr = os.Stderr
 
-	stdout, err := cmd.StdoutPipe()
-	output.OnError(err, "Error connecting to 'go mod download' stdout")
+	b, err := cmd.Output()
+	output.OnError(err, "Error running 'go mod download'")
 
-	err = cmd.Start()
-	output.OnError(err, "Error starting 'go mod download'")
-
-	scanner := bufio.NewScanner(stdout)
-	json := ""
-	for scanner.Scan() {
-		json += scanner.Text()
-	}
-
-	err = cmd.Wait()
-	output.OnError(err, "Error while waiting for 'go download edit'")
-
-	return json
+	return string(b)
 }
 
 // BuildEnv creates the environment in which to run the commands.
