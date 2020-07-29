@@ -45,9 +45,11 @@ func CopyModuleDependencies(mod GoMod, deps []Dep) {
 	}
 
 	for _, d := range mod.Replace {
-		src := path.Join(vendorDir(), d.New.Path)
-		dest := path.Join(vendorDir(), d.Old.Path)
-		copy(src, dest)
+		if d.Old.Path != d.New.Path {
+			src := path.Join(vendorDir(), d.New.Path)
+			dest := path.Join(vendorDir(), d.Old.Path)
+			copy(src, dest)
+		}
 	}
 
 	SaveReport(modFile)
