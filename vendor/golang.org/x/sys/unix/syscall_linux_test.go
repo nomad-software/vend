@@ -19,7 +19,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"unsafe"
 
 	"golang.org/x/sys/unix"
 )
@@ -71,22 +70,6 @@ func TestIoctlGetRTCTime(t *testing.T) {
 	}
 
 	t.Logf("RTC time: %04d-%02d-%02d %02d:%02d:%02d", v.Year+1900, v.Mon+1, v.Mday, v.Hour, v.Min, v.Sec)
-}
-
-func TestIoctlGetRTCWkAlrm(t *testing.T) {
-	f, err := os.Open("/dev/rtc0")
-	if err != nil {
-		t.Skipf("skipping test, %v", err)
-	}
-	defer f.Close()
-
-	v, err := unix.IoctlGetRTCWkAlrm(int(f.Fd()))
-	if err != nil {
-		t.Fatalf("failed to perform ioctl: %v", err)
-	}
-
-	t.Logf("RTC wake alarm enabled '%d'; time: %04d-%02d-%02d %02d:%02d:%02d",
-		v.Enabled, v.Time.Year+1900, v.Time.Mon+1, v.Time.Mday, v.Time.Hour, v.Time.Min, v.Time.Sec)
 }
 
 func TestPpoll(t *testing.T) {
@@ -678,55 +661,5 @@ func TestPrctlRetInt(t *testing.T) {
 	}
 	if v != 1 {
 		t.Fatalf("unexpected return from prctl; got %v, expected %v", v, 1)
-	}
-}
-
-func TestTimerfd(t *testing.T) {
-	var now unix.Timespec
-	if err := unix.ClockGettime(unix.CLOCK_REALTIME, &now); err != nil {
-		t.Fatalf("ClockGettime: %v", err)
-	}
-
-	tfd, err := unix.TimerfdCreate(unix.CLOCK_REALTIME, 0)
-	if err == unix.ENOSYS {
-		t.Skip("timerfd_create system call not implemented")
-	} else if err != nil {
-		t.Fatalf("TimerfdCreate: %v", err)
-	}
-	defer unix.Close(tfd)
-
-	var timeSpec unix.ItimerSpec
-	if err := unix.TimerfdGettime(tfd, &timeSpec); err != nil {
-		t.Fatalf("TimerfdGettime: %v", err)
-	}
-
-	if timeSpec.Value.Nsec != 0 || timeSpec.Value.Sec != 0 {
-		t.Fatalf("TimerfdGettime: timer is already set, but shouldn't be")
-	}
-
-	timeSpec = unix.ItimerSpec{
-		Interval: unix.NsecToTimespec(int64(time.Millisecond)),
-		Value:    now,
-	}
-
-	if err := unix.TimerfdSettime(tfd, unix.TFD_TIMER_ABSTIME, &timeSpec, nil); err != nil {
-		t.Fatalf("TimerfdSettime: %v", err)
-	}
-
-	const totalTicks = 10
-	const bufferLength = 8
-
-	buffer := make([]byte, bufferLength)
-
-	var count uint64 = 0
-	for count < totalTicks {
-		n, err := unix.Read(tfd, buffer)
-		if err != nil {
-			t.Fatalf("Timerfd: %v", err)
-		} else if n != bufferLength {
-			t.Fatalf("Timerfd: got %d bytes from timerfd, expected %d bytes", n, bufferLength)
-		}
-
-		count += *(*uint64)(unsafe.Pointer(&buffer))
 	}
 }

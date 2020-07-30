@@ -6,7 +6,5 @@ github.com/fatih/color
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# golang.org/x/sys v0.0.0-20200728102440-3e129f6d46b1
-## explicit
-golang.org/x/sys/internal/unsafeheader
+# golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae
 golang.org/x/sys/unix
