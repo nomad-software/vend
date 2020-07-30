@@ -47,6 +47,10 @@ func CopyModuleDependencies(mod GoMod, deps []Dep) {
 	for _, d := range mod.Replace {
 		if d.Old.Path != d.New.Path {
 			src := path.Join(vendorDir(), d.New.Path)
+			// Sometimes this is a filepath (abs or relative) rather than a URL.
+			if _, err := os.Stat(d.New.Path); err == nil {
+				src = d.New.Path
+			}
 			dest := path.Join(vendorDir(), d.Old.Path)
 			copy(src, dest)
 		}
