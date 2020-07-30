@@ -12,29 +12,8 @@ import (
 	"github.com/nomad-software/vend/output"
 )
 
-// CopyPkgDependencies copies package level dependencies.
-func CopyPkgDependencies(mod GoMod, deps []Dep) {
-	modFile := cli.ReadModFile(vendorDir())
-dep:
-	for _, r := range mod.Require {
-		for _, d := range deps {
-			if r.Path == d.Path && r.Version == d.Version {
-				fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
-				dest := path.Join(vendorDir(), d.Path)
-				copy(d.Dir, dest)
-
-				continue dep
-			}
-		}
-
-		output.Error("No dependency available for %s (%s)", r.Path, r.Version)
-	}
-
-	SaveReport(modFile)
-}
-
 // CopyModuleDependencies copies module level dependencies transitively.
-func CopyModuleDependencies(deps []Dep) {
+func CopyModuleDependencies(mod GoMod, deps []Dep) {
 	modFile := cli.ReadModFile(vendorDir())
 	deleteVendorDir()
 

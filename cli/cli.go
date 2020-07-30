@@ -19,7 +19,6 @@ func ParseOptions() Options {
 	var opt Options
 
 	flag.BoolVar(&opt.Help, "help", false, "Show help.")
-	flag.BoolVar(&opt.PkgOnly, "package", false, "Only vendor package level dependencies.")
 	flag.Parse()
 
 	return opt
