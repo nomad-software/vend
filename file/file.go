@@ -12,46 +12,102 @@ import (
 	"github.com/nomad-software/vend/output"
 )
 
-// CopyModuleDependencies copies module level dependencies transitively.
-func CopyModuleDependencies(mod GoMod, deps []Dep) {
-	modFile := cli.ReadModFile(vendorDir())
-	deleteVendorDir()
-
-	for _, d := range deps {
-		fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
-		dest := path.Join(vendorDir(), d.Path)
-		copy(d.Dir, dest)
-	}
-
-	SaveReport(modFile)
+// VendorDir represents a vendor directory.
+type VendorDir struct {
+	basePath       string
+	modFileContent []byte
+	mod            GoMod
+	deps           []Dep
 }
 
-// SaveReport saves the report into the vendor directory.
-func SaveReport(report string) {
-	if _, err := os.Stat(vendorDir()); os.IsNotExist(err) {
-		output.Info("No dependencies vended")
-	} else {
-		file := path.Join(vendorDir(), "modules.txt")
-		err := ioutil.WriteFile(file, []byte(report), 0644)
-		output.OnError(err, "Error saving report")
-	}
-}
-
-// VendorDir returns the vendor directory in the current directory.
-func vendorDir() string {
+// InitVendorDir creates a new vendor directory.
+func InitVendorDir() VendorDir {
 	wd, err := os.Getwd()
 	output.OnError(err, "Error getting the current directory")
-	return path.Join(wd, "vendor")
+
+	v := VendorDir{
+		basePath: path.Join(wd, "vendor"),
+		mod:      ParseModJSON(cli.ReadModJSON()),
+		deps:     ParseDownloadJSON(cli.ReadDownloadJSON()),
+	}
+
+	if !v.exists(v.basePath) {
+		output.Error("No dependencies vendored")
+	}
+
+	return v
 }
 
-// deleteVendorDir deletes the vendor directory.
-func deleteVendorDir() {
-	err := os.RemoveAll(vendorDir())
-	output.OnError(err, "Error removing vendor directory")
+// CopyDependencies copies remote module level dependencies transitively.
+func (v *VendorDir) CopyDependencies() {
+	v.clear()
+
+	for _, d := range v.deps {
+		fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
+		v.copy(d.Dir, v.vendPath(d.Path))
+	}
+
+	for _, r := range v.mod.Replace {
+		if r.Old.Path != r.New.Path {
+			fmt.Fprintf(output.Stdout, "vend: replacing %s with %s\n", r.Old.Path, r.New.Path)
+			newPath := v.vendPath(r.New.Path)
+			oldPath := v.vendPath(r.Old.Path)
+			// If the directory is in the vendor folder it was copied from the
+			// module cache so we can just rename it. Otherwise it's a local
+			// directory located somewhere else that needs copying in.
+			if v.exists(newPath) {
+				v.copy(newPath, oldPath)
+				v.remove(newPath)
+			} else {
+				v.copy(r.New.Path, oldPath)
+			}
+		}
+	}
 }
 
-// Copy will copy files to the vendor directory.
-func copy(src string, dest string) {
+// exists checks if a file exists.
+func (v *VendorDir) exists(file string) bool {
+	_, err := os.Stat(file)
+	return !os.IsNotExist(err)
+}
+
+// remove removes a path.
+func (v *VendorDir) remove(p string) {
+	err := os.RemoveAll(p)
+	output.OnError(err, "Error removing path")
+}
+
+// vendPath creates a vendor directory path.
+func (v *VendorDir) vendPath(p string) string {
+	return path.Join(v.basePath, p)
+}
+
+// copyModFile internally copies and saves the modules.txt file.
+func (v *VendorDir) copyModFile() {
+	var err error
+	v.modFileContent, err = ioutil.ReadFile(v.vendPath("modules.txt"))
+	output.OnError(err, "Error reading modules.txt")
+}
+
+// writeModFile writes the modules.txt file into the vendor directory.
+func (v *VendorDir) writeModFile() {
+	err := ioutil.WriteFile(v.vendPath("modules.txt"), v.modFileContent, 0644)
+	output.OnError(err, "Error saving modules.txt")
+}
+
+// clear removes all dependencies from the vendor directory.
+func (v *VendorDir) clear() {
+	v.copyModFile()
+	v.remove(v.basePath)
+
+	err := os.MkdirAll(v.basePath, 0755)
+	output.OnError(err, "Error creating vendor directory")
+
+	v.writeModFile()
+}
+
+// copy will copy files and directories.
+func (v *VendorDir) copy(src string, dest string) {
 	info, err := os.Lstat(src)
 	output.OnError(err, "Error getting information about source")
 
@@ -60,15 +116,15 @@ func copy(src string, dest string) {
 	}
 
 	if info.IsDir() {
-		copyDirectory(src, dest)
+		v.copyDirectory(src, dest)
 	} else {
-		copyFile(src, dest)
+		v.copyFile(src, dest)
 	}
 }
 
-// CopyDirectory will copy directories.
-func copyDirectory(src string, dest string) {
-	err := os.MkdirAll(dest, os.ModePerm)
+// copyDirectory will copy directories.
+func (v *VendorDir) copyDirectory(src string, dest string) {
+	err := os.MkdirAll(dest, 0755)
 	output.OnError(err, "Error creating directories")
 
 	contents, err := ioutil.ReadDir(src)
@@ -77,13 +133,13 @@ func copyDirectory(src string, dest string) {
 	for _, content := range contents {
 		s := filepath.Join(src, content.Name())
 		d := filepath.Join(dest, content.Name())
-		copy(s, d)
+		v.copy(s, d)
 	}
 }
 
-// CopyFile will copy files.
-func copyFile(src string, dest string) {
-	err := os.MkdirAll(filepath.Dir(dest), os.ModePerm)
+// copyFile will copy files.
+func (v *VendorDir) copyFile(src string, dest string) {
+	err := os.MkdirAll(filepath.Dir(dest), 0755)
 	output.OnError(err, "Error creating directories")
 
 	d, err := os.Create(dest)

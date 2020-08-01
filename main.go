@@ -15,9 +15,7 @@ func main() {
 	} else {
 		cli.UpdateModule()
 
-		deps := file.ParseDownloadJSON(cli.ReadDownloadJSON())
-		mod := file.ParseModJSON(cli.ReadModJSON())
-
-		file.CopyModuleDependencies(mod, deps)
+		dir := file.InitVendorDir()
+		dir.CopyDependencies()
 	}
 }

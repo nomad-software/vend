@@ -56,7 +56,3 @@ Run the following command for help.
 ```
 $ vend -help
 ```
-
-## Caveats
-
-* [Go mod replace directives](https://github.com/golang/go/wiki/Modules#when-should-i-use-the-replace-directive) are intentionally not supported because there is no consensus how to support them.
