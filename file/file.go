@@ -32,7 +32,7 @@ func InitVendorDir() VendorDir {
 	}
 
 	if !v.exists(v.basePath) {
-		output.Error("No dependencies vendored")
+		output.Fatal("vend: no dependencies to vendor")
 	}
 
 	return v
@@ -43,13 +43,13 @@ func (v *VendorDir) CopyDependencies() {
 	v.clear()
 
 	for _, d := range v.deps {
-		fmt.Fprintf(output.Stdout, "vend: copying %s (%s)\n", d.Path, d.Version)
+		fmt.Printf("vend: copying %s (%s)\n", d.Path, d.Version)
 		v.copy(d.Dir, v.vendPath(d.Path))
 	}
 
 	for _, r := range v.mod.Replace {
 		if r.Old.Path != r.New.Path {
-			fmt.Fprintf(output.Stdout, "vend: replacing %s with %s\n", r.Old.Path, r.New.Path)
+			fmt.Printf("vend: replacing %s with %s\n", r.Old.Path, r.New.Path)
 			newPath := v.vendPath(r.New.Path)
 			oldPath := v.vendPath(r.Old.Path)
 			// If the directory is in the vendor folder it was copied from the

@@ -3,8 +3,6 @@ package cli
 import (
 	"flag"
 	"fmt"
-
-	"github.com/fatih/color"
 )
 
 // Options contains CLI arguments passed to the program.
@@ -34,7 +32,7 @@ __   _____ _ __   __| |
 
 `
 
-	color.Green(banner)
+	fmt.Println(banner)
 	fmt.Printf("A small command line utility for fully vendoring module dependencies\n\n")
 
 	flag.Usage()
