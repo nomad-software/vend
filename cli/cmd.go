@@ -1,10 +1,8 @@
 package cli
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/nomad-software/vend/output"
 )
@@ -57,12 +55,4 @@ func buildEnv() []string {
 	env := os.Environ()
 	env = append(env, "GO111MODULE=on")
 	return env
-}
-
-// ReadModFile runs a builtin go command to generate an officially formatted report file.
-func ReadModFile(vendorDir string) string {
-	bytes, err := ioutil.ReadFile(filepath.Join(vendorDir, "modules.txt"))
-	output.OnError(err, "Error reading modules.txt")
-
-	return string(bytes)
 }
