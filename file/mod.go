@@ -9,10 +9,11 @@ import (
 // ParseModJSON parses the mode file into a data structure.
 func ParseModJSON(raw string) GoMod {
 	data := GoMod{
-		Module:  module{},
-		Require: make([]require, 0, 10),
-		Exclude: make([]module, 0, 10),
-		Replace: make([]replace, 0, 10),
+		Module:  Module{},
+		Require: make([]Require, 0, 10),
+		Exclude: make([]Module, 0, 10),
+		Replace: make([]Replace, 0, 10),
+		Retract: make([]Retract, 0, 10),
 	}
 
 	err := json.Unmarshal([]byte(raw), &data)
@@ -23,27 +24,36 @@ func ParseModJSON(raw string) GoMod {
 
 // GoMod represents parsed module json data.
 type GoMod struct {
-	Module  module
-	Require []require
-	Exclude []module
-	Replace []replace
+	Module  Module
+	Go      string
+	Require []Require
+	Exclude []Module
+	Replace []Replace
+	Retract []Retract
 }
 
-// module represents parsed module json data.
-type module struct {
+// Module represents parsed module json data.
+type Module struct {
 	Path    string
 	Version string
 }
 
-// require represents parsed module json data.
-type require struct {
+// Require represents parsed module json data.
+type Require struct {
 	Path     string
 	Version  string
 	Indirect bool
 }
 
-// replace represents parsed module json data.
-type replace struct {
-	Old module
-	New module
+// Replace represents parsed module json data.
+type Replace struct {
+	Old Module
+	New Module
+}
+
+// Retract represents dependency version that are retracted.
+type Retract struct {
+	Low       string
+	High      string
+	Rationale string
 }
